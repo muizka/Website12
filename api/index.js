@@ -1,48 +1,35 @@
 export default async function handler(req, res) {
     if (req.method !== "POST") {
-        return res.status(405).json({
-            success: false,
-            error: "Method not allowed"
-        });
+        return res.status(405).json({ success: false });
     }
 
     try {
         const { url } = req.body;
 
         if (!url) {
-            return res.status(400).json({
-                success: false,
-                error: "URL tidak boleh kosong"
-            });
+            return res.status(400).json({ success: false });
         }
 
-        // 🔥 GANTI API DI BAWAH DENGAN API DOWNLOADER YANG KAMU PAKAI
-        const response = await fetch("https://api.tiklydown.eu.org/api/download?url=" + encodeURIComponent(url));
-        const data = await response.json();
+        const response = await fetch(
+            "https://www.tikwm.com/api/?url=" + encodeURIComponent(url)
+        );
 
-        if (!data || !data.video) {
-            return res.status(400).json({
-                success: false,
-                error: "Video tidak ditemukan"
-            });
+        const result = await response.json();
+
+        if (!result.data || !result.data.play) {
+            return res.status(400).json({ success: false });
         }
 
         return res.status(200).json({
             success: true,
             data: [
                 {
-                    type: "video",
-                    url: data.video.noWatermark,
-                    quality: "HD",
-                    extension: "mp4"
+                    url: result.data.play
                 }
             ]
         });
 
-    } catch (err) {
-        return res.status(500).json({
-            success: false,
-            error: "Server error"
-        });
+    } catch (error) {
+        return res.status(500).json({ success: false });
     }
 }
