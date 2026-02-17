@@ -1,33 +1,43 @@
-export default async function handler(req, res) {
-    if (req.method !== "POST") {
-        return res.status(405).json({ success: false });
-    }
+// api/index.js
+import express from "express";
+import fetch from "node-fetch";
+
+const router = express.Router();
+
+// POST /api
+router.post("/", async (req, res) => {
+    const { url } = req.body;
+
+    if (!url) return res.status(400).json({ success: false, error: "URL kosong" });
 
     try {
-        const { url } = req.body;
+        // Contoh API publik gratis TikTok (tikwm.com)
+        const apiUrl = `https://api.tikwm.com/v1/video?url=${encodeURIComponent(url)}`;
 
-        if (!url) {
-            return res.status(400).json({ success: false });
+        const apiRes = await fetch(apiUrl);
+        const json = await apiRes.json();
+
+        if (json.success && json.data && json.data.play) {
+            // kirim hasil ke frontend
+            res.json({
+                success: true,
+                data: [
+                    {
+                        url: json.data.play, // link video tanpa watermark
+                        type: "video",
+                        extension: "mp4",
+                        quality: "HD",
+                        thumbnail: json.data.cover
+                    }
+                ]
+            });
+        } else {
+            res.json({ success: false, error: "Video tidak ditemukan / API gagal" });
         }
-
-        const response = await fetch(
-            "https://www.tikwm.com/api/?url=" + encodeURIComponent(url)
-        );
-
-        const result = await response.json();
-
-        if (!result.data || !result.data.play) {
-            return res.status(400).json({ success: false });
-        }
-
-        return res.status(200).json({
-            success: true,
-            data: [
-                { url: result.data.play }
-            ]
-        });
-
-    } catch (error) {
-        return res.status(500).json({ success: false });
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false, error: "Terjadi kesalahan server" });
     }
-}
+});
+
+export default router;
