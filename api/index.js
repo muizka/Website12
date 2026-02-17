@@ -1,4 +1,3 @@
-// Ambil elemen
 const input = document.getElementById('urlInput');
 const btn = document.getElementById('downloadBtn');
 const loading = document.getElementById('loading');
@@ -6,10 +5,8 @@ const resultDiv = document.getElementById('result');
 const errorCard = document.getElementById('error-msg');
 const errorText = document.getElementById('error-text');
 
-// Event button click
 btn.addEventListener('click', fetchMedia);
 
-// Fetch media
 async function fetchMedia() {
     const url = input.value.trim();
     if (!url) return;
@@ -20,16 +17,13 @@ async function fetchMedia() {
     errorCard.style.display = 'none';
 
     try {
-        const res = await fetch('/api/index', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url })
-        });
-        const data = await res.json();
+        // Menggunakan API publik TikTok downloader (misal: TikTok API demo)
+        const response = await fetch(`https://api.tiktokv2download.com/?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
 
-        if (!res.ok || !data.success) throw new Error(data.error || 'Media tidak ditemukan');
+        if (!data.success || !data.video) throw new Error('Video tidak ditemukan atau link invalid.');
 
-        renderResult(data.data);
+        renderResult([{ type: 'video', url: data.video }]);
 
     } catch (err) {
         errorText.textContent = err.message;
@@ -40,31 +34,26 @@ async function fetchMedia() {
     }
 }
 
-// Render result
 function renderResult(medias) {
     medias.forEach((media, index) => {
         const card = document.createElement('div');
         card.className = 'result-card';
 
-        let typeTitle = 'MEDIA';
-        let mediaPreview = '';
         const ext = media.extension || 'mp4';
         const filename = `SevenDL_${Date.now()}_${index}.${ext}`;
+        let mediaPreview = '';
 
         if (media.type === 'video') {
-            typeTitle = `VIDEO [${media.quality || 'HD'}]`;
             mediaPreview = `<video controls src="${media.url}"></video>`;
         } else if (media.type === 'image') {
-            typeTitle = 'IMAGE';
             mediaPreview = `<img src="${media.url}">`;
         } else if (media.type === 'audio') {
-            typeTitle = 'AUDIO';
             mediaPreview = `<audio controls src="${media.url}"></audio>`;
         }
 
         card.innerHTML = `
             <div class="result-header">
-                <span>${typeTitle}</span>
+                <span>${media.type.toUpperCase()}</span>
                 <span>SUCCESS</span>
             </div>
             <div class="result-body">
@@ -78,12 +67,10 @@ function renderResult(medias) {
                 </button>
             </div>
         `;
-
         resultDiv.appendChild(card);
     });
 }
 
-// Force download
 async function forceDownload(url, filename, btnElement) {
     const originalText = btnElement.innerText;
     btnElement.innerText = "DOWNLOADING...";
