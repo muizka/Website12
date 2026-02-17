@@ -4,136 +4,114 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Seven Downloader</title>
+<link rel="stylesheet" href="style.css">
+
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family: 'Arial', sans-serif; }
 body {
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1950&q=80") no-repeat center center/cover;
+    font-family: 'JetBrains Mono', monospace;
+    background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470') no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 50px 0;
 }
 
 .container {
-  background: rgba(0,0,0,0.65);
-  padding:30px 25px;
-  width:90%;
-  max-width:500px;
-  border-radius:15px;
-  text-align:center;
-  backdrop-filter: blur(8px);
-  box-shadow:0 10px 25px rgba(0,0,0,0.4);
-  color:white;
+    background: rgba(0,0,0,0.7);
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 550px;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-h1 { margin-bottom:15px; font-size:26px; }
-p { margin-bottom:20px; font-size:14px; color:#ddd; }
+h1 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 28px;
+}
 
-input {
-  width:100%;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-  margin-bottom:15px;
-  font-size:14px;
+p {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+input, button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin-bottom: 15px;
+    font-size: 14px;
 }
 
 button {
-  width:100%;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-  background: linear-gradient(45deg, #ff512f, #dd2476);
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-  transition:0.3s;
+    background: linear-gradient(45deg, #ff512f, #dd2476);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
 button:hover {
-  opacity:0.9;
-  transform: scale(1.02);
+    transform: scale(1.05);
+    opacity: 0.9;
 }
 
-.video-preview {
-  margin-top:20px;
-  display:none;
-  width:100%;
-  border-radius:10px;
-  overflow:hidden;
+.result-card {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 12px;
+    transition: all 0.4s ease;
 }
 
-.footer { margin-top:20px; font-size:12px; color:#bbb; }
-.error-msg {
-  background: rgba(255,0,0,0.4);
-  padding:10px;
-  border-radius:8px;
-  margin-top:10px;
-  display:none;
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.result-body img,
+.result-body video {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.cyber-button {
+    background: #6a0dad;
+    color: white;
+    border: 1px solid black;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Seven Video Downloader</h1>
-  <p>Download video TikTok tanpa watermark dengan mudah</p>
+    <h1>Seven Video Downloader</h1>
+    <p>Download video TikTok tanpa watermark</p>
 
-  <input type="text" id="urlInput" placeholder="Tempel link TikTok di sini">
-  <button id="downloadBtn" onclick="fetchMedia()">Download</button>
+    <input type="text" id="urlInput" placeholder="Tempel link TikTok di sini">
+    <button id="downloadBtn">Download Sekarang</button>
+    <div id="loading" style="display:none; text-align:center; margin:10px;">Memproses...</div>
+    
+    <div id="error-msg" style="display:none; background:#ff4444; padding:10px; margin-top:10px; border-radius:8px;">
+        <span id="error-text"></span>
+    </div>
 
-  <div class="error-msg" id="error-msg"></div>
-
-  <video class="video-preview" id="preview" controls></video>
-
-  <div class="footer">© 2026 Seven Downloader</div>
+    <div id="result"></div>
 </div>
 
-<script>
-async function fetchMedia() {
-  const input = document.getElementById('urlInput');
-  const btn = document.getElementById('downloadBtn');
-  const preview = document.getElementById('preview');
-  const errorCard = document.getElementById('error-msg');
-  const url = input.value.trim();
-
-  if (!url) {
-    alert("Masukkan link dulu!");
-    return;
-  }
-
-  btn.innerText = "Memproses...";
-  btn.disabled = true;
-  errorCard.style.display = 'none';
-  preview.style.display = 'none';
-
-  try {
-    const res = await fetch("https://v16-webapp.tiktokcdn.com/..."); // Ganti dengan API kamu
-    const data = await res.json();
-
-    if (data.success && data.data[0].url) {
-      preview.src = data.data[0].url;
-      preview.style.display = "block";
-
-      // buat tombol download
-      const a = document.createElement('a');
-      a.href = data.data[0].url;
-      a.download = "video_tiktok.mp4";
-      a.click();
-    } else {
-      errorCard.innerText = "Gagal download, coba lagi.";
-      errorCard.style.display = 'block';
-    }
-
-  } catch(err) {
-    errorCard.innerText = "Terjadi kesalahan jaringan.";
-    errorCard.style.display = 'block';
-  }
-
-  btn.innerText = "Download";
-  btn.disabled = false;
-}
-</script>
-
+<script src="index.js"></script>
 </body>
 </html>
