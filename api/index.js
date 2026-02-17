@@ -1,160 +1,33 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seven Downloader</title>
-
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
-
-body {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470") no-repeat center center/cover;
-    background-size: cover;
-}
-
-.container {
-    background: rgba(0, 0, 0, 0.65);
-    padding: 40px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 15px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-h1 {
-    color: white;
-    margin-bottom: 20px;
-    font-size: 28px;
-}
-
-p {
-    color: #ddd;
-    font-size: 14px;
-    margin-bottom: 25px;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    margin-bottom: 15px;
-    font-size: 14px;
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(45deg, #ff512f, #dd2476);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
-}
-
-.video-preview {
-    margin-top: 20px;
-    display: none;
-    width: 100%;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.footer {
-    margin-top: 20px;
-    font-size: 12px;
-    color: #bbb;
-}
-</style>
-</head>
-<body>
-
-<div class="container">
-    <h1>Seven Video Downloader</h1>
-    <p>Download video tanpa watermark dengan mudah</p>
-
-    <input type="text" id="url" placeholder="Tempel link TikTok di sini">
-    <button id="downloadBtn" onclick="download()">Download Sekarang</button>
-
-    <video class="video-preview" id="preview" controls></video>
-
-    <div class="footer">
-        © 2026 Seven Downloader
-    </div>
-</div>
-
-<script>
-async function download() {
-    const url = document.getElementById("url").value;
-    const preview = document.getElementById("preview");
-    const btn = document.getElementById("downloadBtn");
-
-    if (!url) {
-        alert("Masukkan link dulu!");
-        return;
+export default async function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ success: false });
     }
-
-    btn.innerText = "Memproses...";
-    btn.disabled = true;
 
     try {
-        const res = await fetch("/api", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url })
+        const { url } = req.body;
+
+        if (!url) {
+            return res.status(400).json({ success: false });
+        }
+
+        const response = await fetch(
+            "https://www.tikwm.com/api/?url=" + encodeURIComponent(url)
+        );
+
+        const result = await response.json();
+
+        if (!result.data || !result.data.play) {
+            return res.status(400).json({ success: false });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: [
+                { url: result.data.play }
+            ]
         });
 
-        const data = await res.json();
-
-        if (data.success && data.data[0].url) {
-            // Tampilkan preview video
-            preview.src = data.data[0].url;
-            preview.style.display = "block";
-
-            // Ubah tombol menjadi download
-            btn.innerText = "Klik untuk Download";
-            btn.onclick = () => {
-                const a = document.createElement("a");
-                a.href = data.data[0].url;
-                a.download = "video.mp4"; // nama file
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
-        } else {
-            alert("Gagal download, coba lagi.");
-            btn.innerText = "Download Sekarang";
-        }
-    } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan.");
-        btn.innerText = "Download Sekarang";
+    } catch (error) {
+        return res.status(500).json({ success: false });
     }
-
-    btn.disabled = false;
 }
-</script>
-
-</body>
-</html>
