@@ -11,31 +11,25 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: "URL kosong" });
         }
 
-        // Gunakan oEmbed resmi TikTok
-        const oembed = await fetch(
+        const response = await fetch(
             `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`
         );
 
-        if (!oembed.ok) {
+        if (!response.ok) {
             return res.status(500).json({ success: false, error: "Gagal ambil data TikTok" });
         }
 
-        const data = await oembed.json();
+        const data = await response.json();
 
         return res.status(200).json({
             success: true,
-            data: [
-                {
-                    type: "video",
-                    url: url
-                }
-            ]
+            html: data.html
         });
 
     } catch (err) {
         return res.status(500).json({
             success: false,
-            error: "Server crash: " + err.message
+            error: "Server error: " + err.message
         });
     }
 }
