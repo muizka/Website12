@@ -19,6 +19,7 @@ body {
     justify-content: center;
     align-items: center;
     background: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470") no-repeat center center/cover;
+    background-size: cover;
 }
 
 .container {
@@ -94,7 +95,7 @@ button:hover {
     <p>Download video tanpa watermark dengan mudah</p>
 
     <input type="text" id="url" placeholder="Tempel link TikTok di sini">
-    <button onclick="download()">Download Sekarang</button>
+    <button id="downloadBtn" onclick="download()">Download Sekarang</button>
 
     <video class="video-preview" id="preview" controls></video>
 
@@ -107,7 +108,7 @@ button:hover {
 async function download() {
     const url = document.getElementById("url").value;
     const preview = document.getElementById("preview");
-    const btn = document.querySelector("button");
+    const btn = document.getElementById("downloadBtn");
 
     if (!url) {
         alert("Masukkan link dulu!");
@@ -131,16 +132,26 @@ async function download() {
             preview.src = data.data[0].url;
             preview.style.display = "block";
 
-            // Otomatis bisa klik download di browser
-            // window.open(data.data[0].url, "_blank"); // optional
+            // Ubah tombol menjadi download
+            btn.innerText = "Klik untuk Download";
+            btn.onclick = () => {
+                const a = document.createElement("a");
+                a.href = data.data[0].url;
+                a.download = "video.mp4"; // nama file
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
         } else {
             alert("Gagal download, coba lagi.");
+            btn.innerText = "Download Sekarang";
         }
     } catch (err) {
+        console.error(err);
         alert("Terjadi kesalahan.");
+        btn.innerText = "Download Sekarang";
     }
 
-    btn.innerText = "Download Sekarang";
     btn.disabled = false;
 }
 </script>
