@@ -8,12 +8,15 @@ btn.addEventListener("click", async () => {
     const errorCard = document.getElementById("error-msg");
     const errorText = document.getElementById("error-text");
 
-    if (!url) return alert("Masukkan URL dulu!");
+    if (!url) {
+        alert("Masukkan URL dulu!");
+        return;
+    }
 
     btn.disabled = true;
-    loading.classList.remove("hidden");
+    loading.style.display = "block";
     resultDiv.innerHTML = "";
-    errorCard.classList.add("hidden");
+    errorCard.style.display = "none";
 
     try {
 
@@ -25,11 +28,12 @@ btn.addEventListener("click", async () => {
 
         const json = await res.json();
 
-        if (!json.success) throw new Error(json.error);
+        if (!json.success) {
+            throw new Error(json.error);
+        }
 
         resultDiv.innerHTML = json.html;
 
-        // penting agar embed aktif
         const script = document.createElement("script");
         script.src = "https://www.tiktok.com/embed.js";
         script.async = true;
@@ -37,10 +41,10 @@ btn.addEventListener("click", async () => {
 
     } catch (err) {
         errorText.textContent = err.message;
-        errorCard.classList.remove("hidden");
+        errorCard.style.display = "block";
     } finally {
         btn.disabled = false;
-        loading.classList.add("hidden");
+        loading.style.display = "none";
     }
 
 });
