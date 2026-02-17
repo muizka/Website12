@@ -11,30 +11,25 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: "URL kosong" });
         }
 
-        const apiURL = `https://api.tiktokv2download.com/?url=${encodeURIComponent(url)}`;
+        // Gunakan oEmbed resmi TikTok
+        const oembed = await fetch(
+            `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`
+        );
 
-        const response = await fetch(apiURL);
-
-        if (!response.ok) {
-            return res.status(500).json({ success: false, error: "API pihak ketiga gagal" });
+        if (!oembed.ok) {
+            return res.status(500).json({ success: false, error: "Gagal ambil data TikTok" });
         }
 
-        const text = await response.text();
-
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            return res.status(500).json({ success: false, error: "Response bukan JSON (API rusak)" });
-        }
-
-        if (!data || !data.data) {
-            return res.status(500).json({ success: false, error: "Format API berubah atau kosong" });
-        }
+        const data = await oembed.json();
 
         return res.status(200).json({
             success: true,
-            data: data.data
+            data: [
+                {
+                    type: "video",
+                    url: url
+                }
+            ]
         });
 
     } catch (err) {
