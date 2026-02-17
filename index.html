@@ -1,53 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Video Downloader</title>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-            padding: 40px;
-            background: #f4f4f4;
-        }
-        input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        button {
-            padding: 10px 20px;
-            background: black;
-            color: white;
-            border: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seven Video Downloader</title>
+
+<style>
+/* --- Reset & Font --- */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'JetBrains Mono', monospace; }
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+}
+
+/* --- Container --- */
+.container {
+    background: rgba(0,0,0,0.65);
+    padding: 40px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 15px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* --- Header --- */
+h1 { color:white; margin-bottom:15px; font-size:28px; }
+p { color:#ddd; margin-bottom:25px; font-size:14px; }
+
+/* --- Input & Button --- */
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(45deg,#ff512f,#dd2476);
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+button:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+/* --- Video Preview --- */
+.video-preview {
+    margin-top: 20px;
+    display:none;
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 5px 20px rgba(0,0,0,0.6);
+}
+
+/* --- Footer --- */
+.footer {
+    margin-top: 20px;
+    font-size:12px;
+    color:#bbb;
+}
+
+/* --- Loading animation --- */
+.loading {
+    margin-top: 10px;
+    color:#fff;
+    display:none;
+    font-size:14px;
+}
+</style>
 </head>
 <body>
 
-    <h1>Video Downloader</h1>
-    <input type="text" id="url" placeholder="Masukkan link video">
-    <br>
-    <button onclick="download()">Download</button>
+<div class="container">
+    <h1>Seven Video Downloader</h1>
+    <p>Download video TikTok tanpa watermark dengan mudah</p>
 
-    <script>
-        async function download() {
-            const url = document.getElementById("url").value;
+    <input type="text" id="url" placeholder="Tempel link TikTok di sini">
+    <button id="downloadBtn">Download Sekarang</button>
 
-            const res = await fetch("/api", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url })
+    <div class="loading" id="loading">Memproses...</div>
+
+    <video class="video-preview" id="preview" controls></video>
+
+    <div class="footer">
+        © 2026 Seven Downloader
+    </div>
+</div>
+
+<script>
+// === Dummy API function (tanpa server) ===
+// NOTE: TikTok sebenarnya butuh server karena CORS, tapi kita bisa demo di client
+async function fetchVideoURL(tiktokURL) {
+    // Contoh simulasi: ambil URL video dummy
+    // Kalau pakai server nyata, fetch ke API TikTok atau backend
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({
+                success:true,
+                data:[{ url:"https://v16-webapp.tiktokcdn.com/placeholder-video.mp4" }]
             });
+        },1500);
+    });
+}
 
-            const data = await res.json();
+// === Download function ===
+async function download() {
+    const url = document.getElementById("url").value.trim();
+    const preview = document.getElementById("preview");
+    const btn = document.getElementById("downloadBtn");
+    const loading = document.getElementById("loading");
 
-            if (data.success) {
-                window.open(data.data[0].url, "_blank");
-            } else {
-                alert("Gagal download");
-            }
+    if(!url){ alert("Masukkan link dulu!"); return; }
+
+    btn.disabled = true;
+    loading.style.display = "block";
+    preview.style.display = "none";
+
+    try {
+        const res = await fetchVideoURL(url); // pakai dummy
+        if(res.success && res.data[0].url){
+            const videoURL = res.data[0].url;
+
+            // Preview video
+            preview.src = videoURL;
+            preview.style.display = "block";
+
+            // Force download
+            const a = document.createElement("a");
+            a.href = videoURL;
+            a.download = "video.mp4";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else {
+            alert("Gagal mengambil video. Coba lagi.");
         }
-    </script>
+    } catch(e){
+        console.error(e);
+        alert("Terjadi kesalahan.");
+    }
+
+    btn.disabled = false;
+    loading.style.display = "none";
+}
+document.getElementById("downloadBtn").addEventListener("click", download);
+</script>
 
 </body>
 </html>
