@@ -4,12 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Seven Downloader</title>
-<link rel="stylesheet" href="style.css">
+
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 body {
+    margin: 0;
+    padding: 0;
     font-family: 'JetBrains Mono', monospace;
     background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470') no-repeat center center/cover;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -19,17 +24,18 @@ body {
 
 .container {
     background: rgba(0,0,0,0.7);
-    padding: 25px;
+    padding: 30px;
     border-radius: 15px;
     width: 90%;
     max-width: 550px;
     color: #fff;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-size: 28px;
 }
 
@@ -93,22 +99,33 @@ button:hover {
     border-radius: 5px;
     font-weight: bold;
 }
+
+#error-msg {
+    display: none;
+    background:#ff4444;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+}
+
+#loading {
+    display: none;
+    text-align: center;
+    margin: 10px;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Seven Video Downloader</h1>
-    <p>Download video TikTok tanpa watermark</p>
+    <p>Download video TikTok tanpa watermark dengan mudah</p>
 
     <input type="text" id="urlInput" placeholder="Tempel link TikTok di sini">
     <button id="downloadBtn">Download Sekarang</button>
-    <div id="loading" style="display:none; text-align:center; margin:10px;">Memproses...</div>
-    
-    <div id="error-msg" style="display:none; background:#ff4444; padding:10px; margin-top:10px; border-radius:8px;">
-        <span id="error-text"></span>
-    </div>
+    <div id="loading">Memproses...</div>
 
+    <div id="error-msg"><span id="error-text"></span></div>
     <div id="result"></div>
 </div>
 
