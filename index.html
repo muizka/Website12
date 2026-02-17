@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 40px;
+            background: #f4f4f4;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: black;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Video Downloader</h1>
+    <input type="text" id="url" placeholder="Masukkan link video">
+    <br>
+    <button onclick="download()">Download</button>
+
+    <script>
+        async function download() {
+            const url = document.getElementById("url").value;
+
+            const res = await fetch("/api", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                window.open(data.data[0].url, "_blank");
+            } else {
+                alert("Gagal download");
+            }
+        }
+    </script>
+
+</body>
+</html>
