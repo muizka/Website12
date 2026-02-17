@@ -3,163 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seven Video Downloader</title>
-
+<title>Seven Downloader</title>
 <style>
-/* --- Reset & Font --- */
-* { margin:0; padding:0; box-sizing:border-box; font-family:'JetBrains Mono', monospace; }
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Arial', sans-serif; }
 body {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1950&q=80") no-repeat center center/cover;
 }
 
-/* --- Container --- */
 .container {
-    background: rgba(0,0,0,0.65);
-    padding: 40px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 15px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.65);
+  padding:30px 25px;
+  width:90%;
+  max-width:500px;
+  border-radius:15px;
+  text-align:center;
+  backdrop-filter: blur(8px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+  color:white;
 }
 
-/* --- Header --- */
-h1 { color:white; margin-bottom:15px; font-size:28px; }
-p { color:#ddd; margin-bottom:25px; font-size:14px; }
+h1 { margin-bottom:15px; font-size:26px; }
+p { margin-bottom:20px; font-size:14px; color:#ddd; }
 
-/* --- Input & Button --- */
 input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    margin-bottom: 15px;
-    font-size: 14px;
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  margin-bottom:15px;
+  font-size:14px;
 }
+
 button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(45deg,#ff512f,#dd2476);
-    color:white;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:0.3s;
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  background: linear-gradient(45deg, #ff512f, #dd2476);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
 }
+
 button:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
+  opacity:0.9;
+  transform: scale(1.02);
 }
 
-/* --- Video Preview --- */
 .video-preview {
-    margin-top: 20px;
-    display:none;
-    width:100%;
-    border-radius:10px;
-    overflow:hidden;
-    box-shadow:0 5px 20px rgba(0,0,0,0.6);
+  margin-top:20px;
+  display:none;
+  width:100%;
+  border-radius:10px;
+  overflow:hidden;
 }
 
-/* --- Footer --- */
-.footer {
-    margin-top: 20px;
-    font-size:12px;
-    color:#bbb;
-}
-
-/* --- Loading animation --- */
-.loading {
-    margin-top: 10px;
-    color:#fff;
-    display:none;
-    font-size:14px;
+.footer { margin-top:20px; font-size:12px; color:#bbb; }
+.error-msg {
+  background: rgba(255,0,0,0.4);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px;
+  display:none;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Seven Video Downloader</h1>
-    <p>Download video TikTok tanpa watermark dengan mudah</p>
+  <h1>Seven Video Downloader</h1>
+  <p>Download video TikTok tanpa watermark dengan mudah</p>
 
-    <input type="text" id="url" placeholder="Tempel link TikTok di sini">
-    <button id="downloadBtn">Download Sekarang</button>
+  <input type="text" id="urlInput" placeholder="Tempel link TikTok di sini">
+  <button id="downloadBtn" onclick="fetchMedia()">Download</button>
 
-    <div class="loading" id="loading">Memproses...</div>
+  <div class="error-msg" id="error-msg"></div>
 
-    <video class="video-preview" id="preview" controls></video>
+  <video class="video-preview" id="preview" controls></video>
 
-    <div class="footer">
-        © 2026 Seven Downloader
-    </div>
+  <div class="footer">© 2026 Seven Downloader</div>
 </div>
 
 <script>
-// === Dummy API function (tanpa server) ===
-// NOTE: TikTok sebenarnya butuh server karena CORS, tapi kita bisa demo di client
-async function fetchVideoURL(tiktokURL) {
-    // Contoh simulasi: ambil URL video dummy
-    // Kalau pakai server nyata, fetch ke API TikTok atau backend
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                success:true,
-                data:[{ url:"https://v16-webapp.tiktokcdn.com/placeholder-video.mp4" }]
-            });
-        },1500);
-    });
-}
+async function fetchMedia() {
+  const input = document.getElementById('urlInput');
+  const btn = document.getElementById('downloadBtn');
+  const preview = document.getElementById('preview');
+  const errorCard = document.getElementById('error-msg');
+  const url = input.value.trim();
 
-// === Download function ===
-async function download() {
-    const url = document.getElementById("url").value.trim();
-    const preview = document.getElementById("preview");
-    const btn = document.getElementById("downloadBtn");
-    const loading = document.getElementById("loading");
+  if (!url) {
+    alert("Masukkan link dulu!");
+    return;
+  }
 
-    if(!url){ alert("Masukkan link dulu!"); return; }
+  btn.innerText = "Memproses...";
+  btn.disabled = true;
+  errorCard.style.display = 'none';
+  preview.style.display = 'none';
 
-    btn.disabled = true;
-    loading.style.display = "block";
-    preview.style.display = "none";
+  try {
+    const res = await fetch("https://v16-webapp.tiktokcdn.com/..."); // Ganti dengan API kamu
+    const data = await res.json();
 
-    try {
-        const res = await fetchVideoURL(url); // pakai dummy
-        if(res.success && res.data[0].url){
-            const videoURL = res.data[0].url;
+    if (data.success && data.data[0].url) {
+      preview.src = data.data[0].url;
+      preview.style.display = "block";
 
-            // Preview video
-            preview.src = videoURL;
-            preview.style.display = "block";
-
-            // Force download
-            const a = document.createElement("a");
-            a.href = videoURL;
-            a.download = "video.mp4";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } else {
-            alert("Gagal mengambil video. Coba lagi.");
-        }
-    } catch(e){
-        console.error(e);
-        alert("Terjadi kesalahan.");
+      // buat tombol download
+      const a = document.createElement('a');
+      a.href = data.data[0].url;
+      a.download = "video_tiktok.mp4";
+      a.click();
+    } else {
+      errorCard.innerText = "Gagal download, coba lagi.";
+      errorCard.style.display = 'block';
     }
 
-    btn.disabled = false;
-    loading.style.display = "none";
+  } catch(err) {
+    errorCard.innerText = "Terjadi kesalahan jaringan.";
+    errorCard.style.display = 'block';
+  }
+
+  btn.innerText = "Download";
+  btn.disabled = false;
 }
-document.getElementById("downloadBtn").addEventListener("click", download);
 </script>
 
 </body>
