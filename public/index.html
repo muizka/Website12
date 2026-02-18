@@ -1,0 +1,25 @@
+async function processDownload() {
+    const url = document.getElementById('videoUrl').value;
+    const btn = document.querySelector('button');
+    
+    if (!url) return alert("Input link dulu!");
+
+    btn.innerText = "Memproses...";
+    
+    try {
+        // Memanggil API yang kita buat di folder /api
+        const response = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Berhasil! Klik OK untuk download.");
+            window.open(data.download_url, '_blank');
+        } else {
+            alert("Gagal mengambil video.");
+        }
+    } catch (e) {
+        alert("Terjadi kesalahan server.");
+    } finally {
+        btn.innerText = "Unduh Video";
+    }
+}
