@@ -1,62 +1,32 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Downloader Selesai</title>
-    <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: #2a2a2a; padding: 25px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 6px; border: none; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:disabled { background: #555; }
-        #result { margin-top: 20px; display: none; }
-        .btn-dl { display: block; padding: 10px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; margin-top: 10px; }
-    </style>
-</head>
-<body>
-
-<div class="box">
-    <h3>Video Downloader</h3>
-    <input type="text" id="videoUrl" placeholder="Tempel link di sini...">
-    <button id="dlBtn" onclick="processDownload()">Download Sekarang</button>
-
-    <div id="result">
-        <p>✅ Berhasil!</p>
-        <a id="downloadLink" class="btn-dl" href="#" target="_blank">Simpan Video</a>
-    </div>
-</div>
-
-<script>
 async function processDownload() {
-    const input = document.getElementById('videoUrl');
+    const urlInput = document.getElementById('videoUrl');
     const btn = document.getElementById('dlBtn');
-    const resDiv = document.getElementById('result');
-    const dlLink = document.getElementById('downloadLink');
+    const resultArea = document.getElementById('resultArea');
+    const downloadLink = document.getElementById('downloadLink');
 
-    if (!input.value) return alert("Isi link dulu!");
+    if (!urlInput.value) return alert("Tempel link videonya dulu!");
 
     btn.disabled = true;
-    btn.innerText = "Memproses...";
-    resDiv.style.display = "none";
+    btn.innerText = "⏳ Sedang Memproses...";
+    resultArea.style.display = "none";
 
     try {
-        const response = await fetch(`/api/download?url=${encodeURIComponent(input.value)}`);
+        // Memanggil API lokal Vercel kamu
+        const response = await fetch(`/api/download?url=${encodeURIComponent(urlInput.value)}`);
         const data = await response.json();
 
         if (data.success) {
-            dlLink.href = data.download_url;
-            resDiv.style.display = "block";
+            downloadLink.href = data.download_url;
+            resultArea.style.display = "block";
+            // Memaksa browser mengunduh (jika didukung)
+            downloadLink.setAttribute('download', 'video.mp4');
         } else {
             alert("Gagal: " + data.message);
         }
     } catch (e) {
-        alert("Koneksi Error!");
+        alert("Terjadi kesalahan sistem. Coba lagi.");
     } finally {
         btn.disabled = false;
-        btn.innerText = "Download Sekarang";
+        btn.innerText = "Unduh Video";
     }
 }
-</script>
-</body>
-</html>
