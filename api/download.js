@@ -1,52 +1,48 @@
 export default async function handler(req, res) {
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { url } = req.query;
-  if (!url) return res.status(400).json({ success: false, message: "URL kosong!" });
+
+  if (!url) {
+    return res.status(400).json({ success: false, message: "URL tidak boleh kosong!" });
+  }
 
   try {
-    // Kita gunakan API TikWM untuk TikTok (sangat stabil) 
-    // atau API pengunduh universal lainnya
-    let apiUrl = "";
-    
-    if (url.includes("tiktok.com")) {
-      apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
-    } else {
-      // Untuk platform lain, kita gunakan instance Cobalt yang jarang dipakai (Mirror)
-      apiUrl = `https://cobalt.api.perv.cat/api/json`; 
-    }
+    const response = await fetch("https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-rapidapi-host": "social-download-all-in-one.p.rapidapi.com",
+        "x-rapidapi-key": "c0b993f899msh6e607c9913ae6afp132ca3jsnff2daf0bcdeb" // Key kamu sudah terpasang
+      },
+      body: JSON.stringify({ url: url })
+    });
 
-    if (url.includes("tiktok.com")) {
-      const resp = await fetch(apiUrl);
-      const result = await resp.json();
-      if (result.data) {
-        return res.status(200).json({ 
-          success: true, 
-          download_url: "https://www.tikwm.com" + result.data.play 
-        });
-      }
-    } else {
-      // Request ke Mirror Cobalt yang lebih sepi
-      const resp = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ url: url, videoQuality: "720" })
+    const data = await response.json();
+
+    // Struktur API ini biasanya mengembalikan array 'medias'
+    if (data && data.medias && data.medias.length > 0) {
+      // Kita ambil link dengan kualitas tertinggi (biasanya indeks pertama)
+      return res.status(200).json({
+        success: true,
+        download_url: data.medias[0].url,
+        title: data.title || "Video Berhasil Diambil"
       });
-      const result = await resp.json();
-      if (result.url) {
-        return res.status(200).json({ success: true, download_url: result.url });
-      }
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Video tidak ditemukan atau link tidak didukung."
+      });
     }
-
-    throw new Error("Gagal mengambil data");
   } catch (error) {
     return res.status(500).json({ 
       success: false, 
-      message: "Server cadangan juga sedang sibuk. Coba link video lain atau tunggu sebentar." 
+      message: "Terjadi kesalahan pada server API." 
     });
   }
 }
