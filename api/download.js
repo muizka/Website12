@@ -2,45 +2,51 @@ export default async function handler(req, res) {
   const { url } = req.query;
 
   if (!url) {
-    return res.status(400).json({ success: false, message: "URL kosong!" });
+    return res.status(400).json({ success: false, message: "URL tidak boleh kosong!" });
   }
 
   try {
-    // Menggunakan API Cobalt (Sangat stabil untuk YT, TikTok, IG)
+    // Kita gunakan Cobalt API yang paling stabil saat ini
     const response = await fetch("https://api.cobalt.tools/api/json", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+        // Meniru browser asli agar tidak diblokir
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Origin": "https://cobalt.tools",
+        "Referer": "https://cobalt.tools/"
       },
       body: JSON.stringify({
         url: url,
-        videoQuality: "720",
-        filenameStyle: "basic"
+        videoQuality: "720", // Standar agar tidak lemot
+        audioFormat: "mp3",
+        removeWtm: true     // Mencoba menghapus watermark jika tersedia
       }),
     });
 
     const data = await response.json();
 
-    // Jika berhasil (status 'stream', 'redirect', atau 'picker' untuk multi-video)
-    if (data.url || data.picker) {
+    // Cobalt mengembalikan status "stream" atau "redirect" jika berhasil
+    if (data.url) {
       return res.status(200).json({
         success: true,
-        download_url: data.url || (data.picker && data.picker[0].url),
-        title: "Video Berhasil Ditemukan"
+        download_url: data.url
       });
-    } else {
-      // Jika Cobalt memberikan pesan error spesifik
+    } else if (data.status === "error") {
       return res.status(400).json({ 
         success: false, 
-        message: data.text || "Format video tidak didukung atau video private." 
+        message: "API Error: " + (data.text || "Video tidak didukung.") 
       });
+    } else {
+      throw new Error("Respon API tidak dikenal");
     }
+
   } catch (error) {
+    console.error("Backend Error:", error);
     return res.status(500).json({ 
       success: false, 
-      message: "Terjadi gangguan koneksi ke server downloader." 
+      message: "Server sedang sibuk atau link tidak valid. Coba lagi nanti." 
     });
   }
 }
