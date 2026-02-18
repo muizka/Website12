@@ -3,62 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Downloader</title>
+    <title>Downloader Selesai</title>
     <style>
-        :root { --primary: #007bff; --bg: #0f172a; --card: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: var(--card); padding: 2rem; border-radius: 1rem; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
-        input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 0.8rem; border: none; border-radius: 0.5rem; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #0056b3; }
-        button:disabled { background: #475569; cursor: not-allowed; }
-        #resultArea { margin-top: 1.5rem; display: none; padding: 1rem; border: 2px dashed var(--primary); border-radius: 0.5rem; }
-        .download-btn { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #2a2a2a; padding: 25px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 6px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #555; }
+        #result { margin-top: 20px; display: none; }
+        .btn-dl { display: block; padding: 10px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>All-in-One Downloader</h1>
-    <input type="text" id="videoUrl" placeholder="Tempel link YouTube, TikTok, IG, FB...">
-    <button id="dlBtn" onclick="processDownload()">Unduh Video</button>
+<div class="box">
+    <h3>Video Downloader</h3>
+    <input type="text" id="videoUrl" placeholder="Tempel link di sini...">
+    <button id="dlBtn" onclick="processDownload()">Download Sekarang</button>
 
-    <div id="resultArea">
-        <p>✅ Video Berhasil Ditemukan!</p>
-        <a id="downloadLink" class="download-btn" href="#" target="_blank">KLIK UNTUK SIMPAN VIDEO</a>
+    <div id="result">
+        <p>✅ Berhasil!</p>
+        <a id="downloadLink" class="btn-dl" href="#" target="_blank">Simpan Video</a>
     </div>
 </div>
 
 <script>
 async function processDownload() {
-    const urlInput = document.getElementById('videoUrl');
+    const input = document.getElementById('videoUrl');
     const btn = document.getElementById('dlBtn');
-    const resultArea = document.getElementById('resultArea');
-    const downloadLink = document.getElementById('downloadLink');
+    const resDiv = document.getElementById('result');
+    const dlLink = document.getElementById('downloadLink');
 
-    if (!urlInput.value) return alert("Tempel link videonya dulu!");
+    if (!input.value) return alert("Isi link dulu!");
 
     btn.disabled = true;
-    btn.innerText = "⏳ Sedang Memproses...";
-    resultArea.style.display = "none";
+    btn.innerText = "Memproses...";
+    resDiv.style.display = "none";
 
     try {
-        const response = await fetch(`/api/download?url=${encodeURIComponent(urlInput.value)}`);
+        const response = await fetch(`/api/download?url=${encodeURIComponent(input.value)}`);
         const data = await response.json();
 
         if (data.success) {
-            downloadLink.href = data.download_url;
-            resultArea.style.display = "block";
-            resultArea.scrollIntoView({ behavior: 'smooth' });
+            dlLink.href = data.download_url;
+            resDiv.style.display = "block";
         } else {
-            alert("Oops! " + data.message);
+            alert("Gagal: " + data.message);
         }
     } catch (e) {
-        alert("Gagal terhubung ke server. Periksa koneksi internet kamu.");
+        alert("Koneksi Error!");
     } finally {
         btn.disabled = false;
-        btn.innerText = "Unduh Video";
+        btn.innerText = "Download Sekarang";
     }
 }
 </script>
