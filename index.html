@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Downloader</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px; background: #252525; color: white; margin-bottom: 1rem; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        #result { margin-top: 1.5rem; display: none; }
+        .dl-link { display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Downloader Pro</h2>
+    <p style="font-size: 0.8rem; color: #aaa;">Support: YouTube, TikTok, IG, FB</p>
+    <input type="text" id="videoUrl" placeholder="Tempel link video di sini...">
+    <button id="btn" onclick="startDownload()">Ambil Video</button>
+
+    <div id="result">
+        <p>Video Berhasil Ditemukan!</p>
+        <a id="downloadBtn" class="dl-link" href="#" target="_blank">UNDUH SEKARANG</a>
+    </div>
+</div>
+
+<script>
+async function startDownload() {
+    const input = document.getElementById('videoUrl');
+    const btn = document.getElementById('btn');
+    const resultDiv = document.getElementById('result');
+    const dlLink = document.getElementById('downloadBtn');
+
+    if (!input.value) return alert("Masukkan URL!");
+
+    // UI Loading
+    btn.disabled = true;
+    btn.innerText = "⏳ Sedang Memproses...";
+    resultDiv.style.display = "none";
+
+    try {
+        // Mengarahkan ke file api/download.js di Vercel
+        const response = await fetch(`/api/download?url=${encodeURIComponent(input.value)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            dlLink.href = data.download_url;
+            resultDiv.style.display = "block";
+        } else {
+            alert("Gagal: " + data.message);
+        }
+    } catch (err) {
+        alert("Terjadi kesalahan koneksi!");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Ambil Video";
+    }
+}
+</script>
+
+</body>
+</html>
