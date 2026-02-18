@@ -1,43 +1,13 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Downloader</title>
-    <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:disabled { background: #ccc; }
-        .result { margin-top: 20px; display: none; }
-        .result a { color: #28a745; text-decoration: none; font-weight: bold; border: 1px solid #28a745; padding: 10px; display: block; border-radius: 6px; }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <h2>Video Downloader</h2>
-    <input type="text" id="videoUrl" placeholder="Tempel link YT, TikTok, IG, FB...">
-    <button id="dlBtn" onclick="processDownload()">Unduh Video</button>
-    
-    <div id="resultArea" class="result">
-        <p>Video Berhasil Diproses!</p>
-        <a id="downloadLink" href="#" target="_blank">KLIK DI SINI UNTUK SIMPAN</a>
-    </div>
-</div>
-
-<script>
 async function processDownload() {
     const urlInput = document.getElementById('videoUrl');
     const btn = document.getElementById('dlBtn');
     const resultArea = document.getElementById('resultArea');
     const downloadLink = document.getElementById('downloadLink');
 
-    if (!urlInput.value) return alert("Input link dulu!");
+    if (!urlInput.value) return alert("Tempel link videonya dulu!");
 
     btn.disabled = true;
-    btn.innerText = "Memproses...";
+    btn.innerText = "⏳ Sedang Memproses...";
     resultArea.style.display = "none";
 
     try {
@@ -47,17 +17,16 @@ async function processDownload() {
         if (data.success) {
             downloadLink.href = data.download_url;
             resultArea.style.display = "block";
-            alert("Berhasil! Link download muncul di bawah tombol.");
+            // Otomatis scroll ke bawah agar link terlihat
+            resultArea.scrollIntoView({ behavior: 'smooth' });
         } else {
-            alert("Gagal: " + data.message);
+            // Tampilkan pesan error asli dari API
+            alert("Oops! " + data.message);
         }
     } catch (e) {
-        alert("Terjadi kesalahan sistem.");
+        alert("Gagal terhubung ke server. Periksa koneksi internet kamu.");
     } finally {
         btn.disabled = false;
         btn.innerText = "Unduh Video";
     }
 }
-</script>
-</body>
-</html>
