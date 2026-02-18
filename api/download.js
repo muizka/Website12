@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS Headers agar bisa diakses browser
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -7,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { url } = req.query;
-  if (!url) return res.status(400).json({ success: false, message: "URL tidak boleh kosong!" });
+  if (!url) return res.status(400).json({ success: false, message: "URL kosong!" });
 
   try {
     const response = await fetch("https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink", {
@@ -21,34 +20,40 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    let finalUrl = null;
 
-    // LOGIKA PENCARIAN LINK (Struktur API Social Download All-In-One)
-    let finalDownloadUrl = null;
-
-    if (data && data.medias && data.medias.length > 0) {
-      // 1. Cari yang kualitasnya paling bagus (paling atas biasanya terbaik)
-      // 2. Utamakan yang ada videonya (bukan hanya audio)
-      const bestMedia = data.medias.find(m => m.extension === 'mp4') || data.medias[0];
-      finalDownloadUrl = bestMedia.url;
+    // STRATEGI PENCARIAN LINK (DEEP SEARCH)
+    // 1. Cek di dalam array 'medias' (Standar API ini)
+    if (data.medias && Array.isArray(data.medias) && data.medias.length > 0) {
+      // Cari yang ada videonya, jika tidak ada ambil yang pertama
+      const videoOnly = data.medias.find(m => m.extension === 'mp4' || m.type === 'video');
+      finalUrl = videoOnly ? videoOnly.url : data.medias[0].url;
+    } 
+    // 2. Cek jika link ada di root (beberapa API menaruhnya di sini)
+    else if (data.url) {
+      finalUrl = data.url;
+    }
+    // 3. Cek jika link ada di dalam objek 'result'
+    else if (data.result && data.result.url) {
+      finalUrl = data.result.url;
     }
 
-    if (finalDownloadUrl) {
+    if (finalUrl) {
+      // Pastikan URL menggunakan HTTPS
+      if (finalUrl.startsWith('//')) finalUrl = 'https:' + finalUrl;
+
       return res.status(200).json({
         success: true,
-        download_url: finalDownloadUrl,
-        title: data.title || "Video Berhasil Diambil"
+        download_url: finalUrl
       });
     } else {
+      // Jika benar-benar kosong, kita kirimkan pesan dari API-nya langsung
       return res.status(400).json({
         success: false,
-        message: "API tidak menemukan link video di dalam postingan ini."
+        message: data.message || "Video tidak ditemukan atau link tidak didukung."
       });
     }
-
   } catch (error) {
-    return res.status(500).json({ 
-      success: false, 
-      message: "Terjadi gangguan koneksi ke RapidAPI." 
-    });
+    return res.status(500).json({ success: false, message: "Server API sedang bermasalah." });
   }
 }
