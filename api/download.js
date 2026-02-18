@@ -2,35 +2,35 @@ export default async function handler(req, res) {
   const { url } = req.query;
 
   if (!url) {
-    return res.status(400).json({ success: false, message: "URL diperlukan" });
+    return res.status(400).json({ success: false, message: "URL tidak ditemukan" });
   }
 
   try {
-    // Kita gunakan layanan pihak ketiga yang stabil untuk parsing video
-    // Contoh: Menggunakan API dari ddownr atau sejenisnya (untuk edukasi)
-    const apiUrl = `https://api.vyt.monster/v1/info?url=${encodeURIComponent(url)}`;
-    
-    const response = await fetch(apiUrl);
+    // Kita menggunakan Cobalt API yang mendukung YT, TikTok, IG, FB
+    const response = await fetch("https://api.cobalt.tools/api/json", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        url: url,
+        videoQuality: "720",
+      }),
+    });
+
     const data = await response.json();
 
-    if (data && data.links) {
-      // Mengambil link download pertama yang tersedia
-      const downloadLink = data.links[0].url;
-
+    if (data.status === "stream" || data.status === "picker" || data.status === "redirect") {
       return res.status(200).json({
         success: true,
-        title: data.title || "Video Download",
-        download_url: downloadLink
+        download_url: data.url,
+        title: "Video Siap Diunduh"
       });
     } else {
-      throw new Error("Video tidak ditemukan atau private");
+      return res.status(400).json({ success: false, message: "Gagal mengambil video. Coba link lain." });
     }
-
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ 
-      success: false, 
-      message: "Gagal memproses video. Pastikan link valid." 
-    });
+    return res.status(500).json({ success: false, message: "Server error: " + error.message });
   }
 }
